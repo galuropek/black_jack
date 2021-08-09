@@ -5,7 +5,6 @@ require_relative 'card'
 class CardDeck
   attr_reader :min, :deck
 
-  EXPECTED_COUNT = 52
   SUITS = {
     diamonds: "\u2666",
     hearts: "\u2665",
@@ -19,8 +18,12 @@ class CardDeck
     init_deck
   end
 
+  def take_card
+    deck.delete(deck.sample)
+  end
+
   def show_deck
-    @deck.each { |card| puts card }
+    deck.each { |card| puts card }
   end
 
   private
@@ -48,18 +51,18 @@ class CardDeck
       value = init_value[:value]
       numeric = init_value[:numeric]
       alternative = init_value[:alternative]
-      @deck << Card.new(value, suit, numeric, alternative)
+      deck << Card.new(value, suit, numeric, alternative)
     end
   end
 
   def card_variations
     {
-      numbers: { min: @min, max: 10 },
+      numbers: { min: min, max: 10 },
       dignity: {
         jack: { value: 'J', numeric: 10 },
         queen: { value: 'Q', numeric: 10 },
         king: { value: 'K', numeric: 10 },
-        ace: { value: 'A', number: 11, alternative: 1 }
+        ace: { value: 'A', numeric: 11, alternative: 1 }
       }
     }
   end

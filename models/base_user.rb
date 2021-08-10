@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'bank'
 
 class BaseUser
@@ -24,7 +26,11 @@ class BaseUser
   end
 
   def show_hand
-    hand.each { |card| print "#{card} " }
+    puts hand_str
+  end
+
+  def hand_str
+    hand.join(' ')
   end
 
   def win
@@ -35,6 +41,8 @@ class BaseUser
     bank.lose_bet
   end
 
+  alias place_bet lose
+
   def to_s
     name
   end
@@ -42,5 +50,4 @@ class BaseUser
   protected
 
   attr_writer :name, :bank, :hand
-
 end

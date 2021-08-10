@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class Bank
   attr_reader :balance, :bet, :currency
 
   ERRORS = {
     bad_balance: 'The balance is less than the bet!'
-  }
+  }.freeze
 
   def initialize(balance, bet, currency = '$')
     @balance = balance

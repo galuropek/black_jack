@@ -107,7 +107,8 @@ class Main
 
   def show_table
     bet_info = "Bet: #{GAME_SETTINGS[:bet]} $"
-    puts TABLE % table_params(dealer.hand_str_secret, bet_info)
+    hand = extract_dealer_hand
+    puts TABLE % table_params(hand, bet_info)
   end
 
   def show_result(winner)

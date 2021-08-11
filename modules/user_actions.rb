@@ -40,6 +40,15 @@ module UserActions
     dealer.msg = 'Message: Pass!'
   end
 
+  def extract_dealer_hand
+    if dealer.hand_is_full?
+      dealer.msg = "Sum: #{dealer.hand_sum}"
+      dealer.hand_str
+    else
+      dealer.hand_str_secret
+    end
+  end
+
   def find_the_winner(users)
     return if users.map(&:hand_sum).uniq.count < users.count # draw check
 

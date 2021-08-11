@@ -50,6 +50,18 @@ module UserActions
   end
 
   def find_the_winner(users)
+    if (winner = winner_logic(users))
+      winner.return_bet
+      winner.win
+      winner
+    else # draw
+      user.return_bet
+      dealer.return_bet
+      nil
+    end
+  end
+
+  def winner_logic(users)
     return if users.map(&:hand_sum).uniq.count < users.count # draw check
 
     users.each { |usr| usr.result = (EXPECTED_VALUE - usr.hand_sum).abs }

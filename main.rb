@@ -28,7 +28,7 @@ class Main
 
     loop do
       clear_table
-      @round >= 3 || user.hand_is_full? ? end_game : play_game
+      end_game? ? end_game : play_game
     end
   end
 
@@ -49,10 +49,15 @@ class Main
     dealer.msg = "Sum: #{dealer.hand_sum}"
     clear_table
     winner = find_the_winner([user, dealer])
-    winner_logic(winner)
     show_result(winner)
     show_menu(end_game_menu)
     execute_user_action(end_game_menu)
+  end
+
+  def end_game?
+    @round >= 3 ||
+      user.hand_is_full? ||
+      dealer.hand_is_full?
   end
 
   def next_game
@@ -85,18 +90,6 @@ class Main
 
   def execute_dealer_action
     dealer.need_card? && !dealer.hand_is_full? ? one_more_card(dealer) : dealer_pass
-  end
-
-  def winner_logic(winner)
-    if winner
-      winner.return_bet
-      winner.win
-      winner
-    else # draw
-      user.return_bet
-      dealer.return_bet
-      nil
-    end
   end
 
   # game`s table activities

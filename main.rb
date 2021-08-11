@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
-# require_relative 'models/bank'
 require_relative 'models/card'
 require_relative 'models/card_deck'
-# require_relative 'models/dealer'
-# require_relative 'models/user'
 
 require_relative 'modules/user_actions'
 require_relative 'modules/menu'
@@ -15,33 +12,12 @@ class Main
 
   attr_reader :user, :dealer, :deck
 
-  TABLE = '
-******************
-*** Black Jack ***
-******************
-
-Game: %<game>s        Round: %<round>s
-------------------------------------
-		Dealer:
-Bank: %<dealer_bank>s		Bet: %<bet>s
-Hand: %<dealer_hand>s
-Message: %<dealer_message>s
-------------------------------------
-		%<user_name>s:
-Bank: %<user_bank>s		Bet: %<bet>s
-Hand: %<user_hand>s
-Your sum: %<user_sum>s
-------------------------------------
-'
-  GAME_SETTINGS = {
-    bank: 100,
-    bet: 10
-  }.freeze
+  DRAW = 'not found !!! It`s a DRAW '
+  GAME_SETTINGS = { bank: 100, bet: 10 }.freeze
 
   def initialize
     @user = init_user
     @dealer = init_dealer
-    @deck = CardDeck.new
     @game = 1
     @round = 1
   end
@@ -49,16 +25,10 @@ Your sum: %<user_sum>s
   def start_game
     prepare_to_game(dealer)
     prepare_to_game(user)
-    # user.add_card_to_hand(deck.take_card)
-    # dealer.add_card_to_hand(deck.take_card)
-    # user.show_hand
-    # dealer.show_hand
+
     loop do
-      system 'clear'
-      show_table
-      show_menu
-      execute_user_action
-      execute_dealer_action
+      clear_table
+      @round < 2 ? play_game : end_game
     end
   end
 
@@ -66,46 +36,102 @@ Your sum: %<user_sum>s
 
   attr_writer :user, :dealer, :deck
 
+  # game steps
+
+  def play_game
+    show_table
+    show_menu(play_menu)
+    user_action = execute_user_action(play_menu)
+    execute_dealer_action if user_action != :end_game
+  end
+
+  def end_game
+    dealer.msg = "Sum: #{dealer.hand_sum}"
+    clear_table
+    winner = find_the_winner([user, dealer])
+    winner_logic(winner)
+    show_result(winner)
+    show_menu(end_game_menu)
+    execute_user_action(end_game_menu)
+  end
+
+  def next_game
+    @round = 1
+    @game += 1
+    prepare_to_first_round(user)
+    prepare_to_first_round(dealer)
+    dealer.clear_msg!
+  end
+
+  # game logic
+
   def prepare_to_game(usr)
     usr.init_bank(GAME_SETTINGS[:bank], GAME_SETTINGS[:bet])
+    prepare_to_first_round(usr)
+  end
+
+  def prepare_to_first_round(usr)
+    @deck = CardDeck.new
     usr.init_hand(deck.take_card, deck.take_card)
     usr.place_bet
   end
 
+  def execute_user_action(menu)
+    @round += 1
+    user_action = user_choice(menu)
+    send user_action
+    user_action
+  end
+
+  def execute_dealer_action
+    dealer.need_card? ? one_more_card(dealer) : dealer_pass
+  end
+
+  def winner_logic(winner)
+    if winner
+      winner.return_bet
+      winner.win
+      winner
+    else # draw
+      user.return_bet
+      dealer.return_bet
+      nil
+    end
+  end
+
+  # game`s table activities
+
+  def clear_table
+    system 'clear'
+  end
+
   def show_table
-    puts TABLE % table_params
+    bet_info = "Bet: #{GAME_SETTINGS[:bet]} $"
+    puts TABLE % table_params(dealer.hand_str_secret, bet_info)
+  end
+
+  def show_result(winner)
+    result = "Winner: #{winner || DRAW} !!!"
+    puts TABLE % table_params(dealer.hand_str, nil, result)
   end
 
   # rubocop:disable Metrics/MethodLength
-  def table_params
+  def table_params(dealer_hand, bet_info, result = nil)
     {
       game: @game,
       round: @round,
+      result: result,
       dealer_bank: dealer.bank,
-      bet: "#{GAME_SETTINGS[:bet]} $",
-      dealer_hand: dealer.hand_str,
-      dealer_message: dealer.msg,
+      bet: bet_info,
+      dealer_hand: dealer_hand,
+      dealer_message: dealer.msg || 'Message: Let`s play!',
       user_name: user.name,
       user_bank: user.bank,
       user_hand: user.hand_str,
       user_sum: user.hand_sum
     }
   end
-
   # rubocop:enable Metrics/MethodLength
-
-  def execute_user_action
-    @round += 1
-    send(user_action, user)
-  rescue NoMethodError => e
-    puts "ERROR: #{e.message}"
-    puts INCORRECT_INPUT
-    retry
-  end
-
-  def execute_dealer_action
-    dealer.need_card? ? one_more_card(dealer) : dealer_pass
-  end
 end
 
 Main.new.start_game

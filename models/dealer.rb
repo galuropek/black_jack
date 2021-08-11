@@ -7,11 +7,15 @@ class Dealer < BaseUser
 
   EXPECTED_MAX_VALUE = 17
 
+  def clear_msg!
+    self.msg = nil
+  end
+
   def need_card?
     hand_sum < EXPECTED_MAX_VALUE
   end
 
-  def hand_str
+  def hand_str_secret
     hand.map { |_| '*' }.join(' ')
   end
 end

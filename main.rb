@@ -28,7 +28,7 @@ class Main
 
     loop do
       clear_table
-      @round < 2 ? play_game : end_game
+      @round >= 3 || user.hand_is_full? ? end_game : play_game
     end
   end
 
@@ -84,7 +84,7 @@ class Main
   end
 
   def execute_dealer_action
-    dealer.need_card? ? one_more_card(dealer) : dealer_pass
+    dealer.need_card? && !dealer.hand_is_full? ? one_more_card(dealer) : dealer_pass
   end
 
   def winner_logic(winner)

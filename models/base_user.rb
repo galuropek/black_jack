@@ -55,6 +55,10 @@ class BaseUser
     hand_sum > EXPECTED_VALUE
   end
 
+  def hand_is_full?
+    hand.count >= 3
+  end
+
   def to_s
     name
   end

@@ -4,10 +4,9 @@ require_relative '../models/user'
 require_relative '../models/dealer'
 
 module UserActions
-  DEALER_NAME = 'Дилер'
-  MESSAGE = {
-    user_init: 'Enter you name, please: '
-  }.freeze
+  USER_INIT = 'Enter you name, please: '
+  DEALER_NAME = 'Dealer'
+  EXPECTED_VALUE = 21
 
   private
 
@@ -16,24 +15,41 @@ module UserActions
     User.new(user_name)
   end
 
+  def init_user_dialog
+    print USER_INIT
+    gets.chomp.strip
+  end
+
   def init_dealer
     Dealer.new(DEALER_NAME)
   end
 
-  def init_user_dialog
-    print MESSAGE[:user_init]
-    gets.chomp.strip
+  def one_more_card_user
+    one_more_card(user)
   end
 
   def one_more_card(usr)
     usr.add_card_to_hand(deck.take_card)
   end
 
-  def pass(user)
+  def pass
     # just skip
   end
 
   def dealer_pass
-    dealer.msg = 'Pass!'
+    dealer.msg = 'Message: Pass!'
+  end
+
+  def find_the_winner(users)
+    return if users.map(&:hand_sum).uniq.count < users.count # draw check
+
+    users.each { |usr| usr.result = (EXPECTED_VALUE - usr.hand_sum).abs }
+    winner = return_winner_if_one_over(users)
+    winner || users.min_by(&:result)
+  end
+
+  def return_winner_if_one_over(users)
+    not_over_users = users.reject(&:over?)
+    not_over_users.count == 1 ? not_over_users.first : nil
   end
 end
